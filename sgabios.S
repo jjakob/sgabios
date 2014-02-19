@@ -128,7 +128,7 @@ pnp_table:
 	/* FIXME: **** PnP header currently disabled by PoO **** */
 	/* legacy entry only called once, PnP entry called multiple times */
 	/* The code isn't yet written to deal with multiple inits properly */
-	.ascii "$PoO"		/* PnP expansion header signature */
+	.ascii "$PnP"		/* PnP expansion header signature */
 	.byte 1			/* structure revision */
 	.byte 2			/* length in 16-byte increments */
 	.word 0			/* offset of next header, 0 if none */
@@ -141,7 +141,7 @@ pnp_table:
 	.byte 0xe3		/* device indicators, input/display dev */
 	.word 0			/* boot connection vector, 0 if none */
 	.word 0			/* disconnect vector, 0 if none */
-	.word pnp_init		/* bootstrap entry vector */
+	.word 0			/* bootstrap entry vector */
 	.word 0			/* reserved */
 	.word 0			/* static resource information vector */
 
@@ -172,6 +172,8 @@ term_info:
 	.asciz "Term: "
 ebda_info:
 	.asciz "EBDA: "
+
+
 
 /*
  * do_old_irq3 - exception 0x0b, int 0x0a
