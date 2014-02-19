@@ -173,8 +173,6 @@ term_info:
 ebda_info:
 	.asciz "EBDA: "
 
-
-
 /*
  * do_old_irq3 - exception 0x0b, int 0x0a
  *
