@@ -80,6 +80,8 @@
 # define CHECK_VGA cmpw $0xc000, %cs:old_int10h_seg
 #endif
 
+#define SGABIOS_ROM_SIZE	(511 + _end_sgabios - _start)/512
+
 .code16
 .org 0x0
 .text
@@ -88,7 +90,7 @@ _start:
 	/* option rom header */
 	.byte 0x55
 	.byte 0xaa
-	.byte (511 + _end_sgabios - _start)/512
+	.byte SGABIOS_ROM_SIZE	/* macro calculated at compile time */
 	/* legacy entry at offset 3 */
 	jmp pnp_sga_init
 	/* pnp entry here to avoid changing PnP table as code moves */
@@ -121,19 +123,20 @@ old_int16h:			/* store what was at offset 0x58 */
 	.word 0xe82e		/* placeholder for chained ISR offset */
 	.word 0xf000		/* placeholder for chained ISR segment */
 .org 0x18
-	.word 0			/* offset to PCI data, 0 = none */
+	.word pci_data		/* offset to PCI data structure */
 	.word pnp_table		/* offset to PnP expansion header */
 .org 0x20
 pnp_table:
-	/* FIXME: **** PnP header currently disabled by PoO **** */
+	/* FIXME: */
 	/* legacy entry only called once, PnP entry called multiple times */
 	/* The code isn't yet written to deal with multiple inits properly */
+	/* enabling PnP now could cause instability, but we'll do it anyway */
 	.ascii "$PnP"		/* PnP expansion header signature */
 	.byte 1			/* structure revision */
 	.byte 2			/* length in 16-byte increments */
 	.word 0			/* offset of next header, 0 if none */
 	.byte 0			/* reserved */
-	.byte 0x52		/* checksum - update manually! FIXME */
+	.byte 0x52		/* checksum - ***must be patched manually*** */
 	.long 0			/* device identifier */
 	.word mfg_string	/* pointer to manufacturer string */
 	.word prod_string	/* pointer to product name string */
@@ -172,6 +175,22 @@ term_info:
 	.asciz "Term: "
 ebda_info:
 	.asciz "EBDA: "
+
+	/* PCI data structure */
+.align 4	/* must be DWORD aligned */
+pci_data:
+	.ascii "PCIR"
+	.word 0x8086	/* vendor ID */
+	.word 0x1229	/* device ID */
+	.word 0x0000	/* reserved */
+	.word 0x0018	/* PCI data structure length in bytes */
+	.byte 0x00	/* PCI data structure revision level */
+	.byte 0x00, 0x00, 0x02	/* class code */
+	.word SGABIOS_ROM_SIZE	/* image length in 512-byte units */
+	.word 0x0000	/* revision level of code/data */
+	.byte 0x00	/* code type, 0=Intel x86, PC AT compatible */
+	.byte 0x80	/* indicator, bit 7 set means this is last image in ROM */
+	.word 0x0000	/* reserved */
 
 /*
  * do_old_irq3 - exception 0x0b, int 0x0a
