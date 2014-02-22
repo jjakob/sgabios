@@ -14,27 +14,36 @@
 #
 # $Id$
 
-CFLAGS = -Wall -O2 -s
+BUILD_CL = \"PnP\"
+BUILD_DATE = \"$(shell date -u)\"
+BUILD_SHORT_DATE = \"$(shell date -u +%D)\"
+BUILD_HOST = \"$(shell hostname)\"
+BUILD_USER = \"$(shell whoami)\"
 
-.SUFFIXES: .tmpbin
+#CFLAGS = -Wall -O2 -s
+CFLAGS := -Wall -Os -m32 -nostdlib
+
+ASFLAGS := $(CFLAGS)
+ASFLAGS += -DBUILD_CL="$(BUILD_CL)"
+ASFLAGS += -DBUILD_DATE="$(BUILD_DATE)"
+ASFLAGS += -DBUILD_SHORT_DATE="$(BUILD_SHORT_DATE)"
+ASFLAGS += -DBUILD_HOST="$(BUILD_HOST)"
+ASFLAGS += -DBUILD_USER="$(BUILD_USER)"
+
+.SUFFIXES: .bin .tmpbin
 
 all: sgabios.bin
 
 # FIXME: should calculate the size by rounding it up to the nearest
 # 512-byte boundary
-sgabios.bin: sgabios.tmpbin buildrom.py
-	./buildrom.py sgabios.tmpbin sgabios.bin
+#sgabios.bin: sgabios.tmpbin buildrom.py
+#	./buildrom.py sgabios.tmpbin sgabios.bin
 
-sgabios.tmpbin: sgabios.S version.h config.h
+sgabios.bin: Makefile sgabios.S config.h
 
-version.h: Makefile sgabios.S
-	@echo '#define BIOS_BUILD_DATE "'`date -u +%D`'"' >version.h
-	@echo '#define BIOS_FULL_DATE "'`date -u`'"' >>version.h
-	@echo '#define BIOS_BUILD_HOST "'`echo $$LOGNAME@$$HOSTNAME`'"' >>version.h
-
-.S.tmpbin:
-	$(CC) -c $(CFLAGS) $*.S -o $*.o
-	$(LD) -Ttext 0x0 -s --oformat binary $*.o -o $*.tmpbin
+.S.bin:
+	$(CC) -c $(ASFLAGS) $*.S -o $*.o
+	$(LD) -melf_i386 -Ttext 0x0 -s --nostdlib --oformat binary $*.o -o $*.bin
 
 clean:
-	$(RM) *.s *.o *.tmpbin *.bin *.srec *.com version.h
+	$(RM) *.s *.o *.bin *.srec *.com

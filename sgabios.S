@@ -15,7 +15,6 @@
  */
 
 #include "config.h"
-#include "version.h"
 
 /* don't allocate ebda if new value at 0x40e will be less than this */
 #define EBDA_MIN_SEG		0x9800
@@ -155,14 +154,16 @@ mfg_string:
 prod_string:
 	.ascii "Serial Graphics Adapter "
 build_date:
-	.asciz BIOS_BUILD_DATE
+	.asciz BUILD_SHORT_DATE
 long_version:
-	.ascii "SGABIOS Version "
-	.ascii BIOS_BUILD_VERSION
+	.ascii "SGABIOS "
+	.ascii BUILD_CL
 	.ascii " ("
-	.ascii BIOS_BUILD_HOST
+	.ascii BUILD_USER
+	.ascii "@"
+	.ascii BUILD_HOST
 	.ascii ") "
-	.asciz BIOS_FULL_DATE
+	.asciz BUILD_DATE
 term_cols:
 	.byte 80	/* overwritten at rom init with detected value */
 term_rows:
